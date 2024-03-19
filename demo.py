@@ -69,9 +69,9 @@ if args.image_path is None:
     config_file = 'configs/pano_generation.yaml'
     config = yaml.load(open(config_file, 'rb'), Loader=yaml.SafeLoader)
     model = PanoGenerator(config)
-    model.load_state_dict(torch.load('weights/pano.ckpt', map_location='cpu')['state_dict'], strict=True)
-    #saved_ckpt = torch.load('weights/pano.ckpt', map_location='cpu')
-    #model.load_state_dict(saved_ckpt, strict=False)
+    model.load_state_dict(torch.load('../../data/pre-trained-models/mvdiffusion/pano.ckpt', map_location='cpu')[
+            'state_dict'], strict=True)
+    print('load ====pano.ckpt=====')
     model=model.cuda()
     img=None
 else:
@@ -79,9 +79,9 @@ else:
     config_file = 'configs/pano_generation_outpaint.yaml'
     config = yaml.load(open(config_file, 'rb'), Loader=yaml.SafeLoader)
     model = PanoOutpaintGenerator(config)
-    model.load_state_dict(torch.load('weights/pano_outpaint.ckpt', map_location='cpu')['state_dict'], strict=True)
-    #saved_ckpt = torch.load('weights/pano_outpaint.ckpt', map_location='cpu')
-    #model.load_state_dict(saved_ckpt, strict=False)
+    model.load_state_dict(torch.load('../data/pre-trained-models/mvdiffusion/pano_outpaint.ckpt', map_location='cpu')[
+            'state_dict'], strict=True)
+    print('load ====pano_outpaint.ckpt=====')
     model=model.cuda()
 
     img=cv2.imread(args.image_path)
