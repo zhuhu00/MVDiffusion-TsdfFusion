@@ -1,7 +1,7 @@
 dataset:
   name: scannet
   num_views: 12
-  image_dir: data/scannet/test
+  image_dir: /root/data/dataset/mvdiffusion/scannet/scannet/test
   resolution_h: 192
   resolution_w: 256
   data_load_mode: two_stage

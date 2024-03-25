@@ -10,7 +10,6 @@ from PIL import Image
 from tqdm import tqdm
 
 
-
 def generate_video(image_paths, out_dir, gen_video=True):
     pers = [cv2.imread(image_path) for image_path in image_paths]
 

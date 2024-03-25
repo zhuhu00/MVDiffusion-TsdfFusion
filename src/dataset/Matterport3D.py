@@ -91,8 +91,6 @@ class MP3Ddataset(torch.utils.data.Dataset):
             img = warp_img(
                 90, _degree, 0, images_raw, self.vx, self.vy)
             img = cv2.resize(img, (self.resolution, self.resolution))
-            
-            
 
             K, R = get_K_R(90, _degree, 0,
                            self.resolution, self.resolution)

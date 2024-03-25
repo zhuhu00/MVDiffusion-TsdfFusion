@@ -40,8 +40,6 @@ if __name__ == "__main__":
     config = yaml.load(open(args.main_cfg_path, 'rb'), Loader=yaml.SafeLoader)
     config['train']['max_epochs'] = args.max_epochs
 
-    image_root_dir = "training/mp3d_skybox"
-
     mode = 'train' if args.eval_on_train else 'val'
 
     if config['dataset']['name'] == 'mp3d':

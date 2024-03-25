@@ -16,51 +16,54 @@ class Scannetdataset(torch.utils.data.Dataset):
         self.valid_ids = dict()
         scannet_root_dir=config['image_dir']
         scenes=os.listdir(scannet_root_dir)
+        # scenes='scene0707_00'
         if len(scenes)==0:
             raise Exception('No scenes in {}, please check ScanNet is in the correct path'.format(scannet_root_dir))
         else:
             print('Found {} scenes'.format(len(scenes)))
         for scene_id in sorted(scenes):
-            scene_dir = os.path.join(scannet_root_dir, scene_id)
-            if os.path.exists(os.path.join(scene_dir, 'valid_frames.npy')):
-                valid_id=np.load(os.path.join(scene_dir, 'valid_frames.npy'))
-            else:
-                raise Exception('{} does not contain valid_frames.npy'.format(scene_id))
+            if scene_id =='scene0707_00':
+                scene_dir = os.path.join(scannet_root_dir, scene_id)
+                print(scene_dir)
+                if os.path.exists(os.path.join(scene_dir, 'valid_frames.npy')):
+                    valid_id=np.load(os.path.join(scene_dir, 'valid_frames.npy'))
+                else:
+                    raise Exception('{} does not contain valid_frames.npy'.format(scene_id))
+                
+                if config['data_load_mode']=='fix_interval':
+                    max_id=max(valid_id)
+                    kf_ids=[i for i in range(0, max_id, config['test_interval']) if i in valid_id]
+                    if len(kf_ids)>150: # relex this number if using GPU with large memory
+                        continue
+                else:
+                    kf_path = os.path.join(scene_dir, 'key_frame_0.6.txt')
+                    if not os.path.exists(kf_path):
+                        raise Exception("{} does not contain key_frame_0.6.txt".format(scene_id))
+                    with open(kf_path, 'r') as f:
+                        kf_ids = f.readlines()
+                    kf_ids = [int(item.strip()) for item in kf_ids]
             
-            if config['data_load_mode']=='fix_interval':
-                max_id=max(valid_id)
-                kf_ids=[i for i in range(0, max_id, config['test_interval']) if i in valid_id]
-                if len(kf_ids)>150: # relex this number if using GPU with large memory
-                    continue
-            else:
-                kf_path = os.path.join(scene_dir, 'key_frame_0.6.txt')
-                if not os.path.exists(kf_path):
-                    raise Exception("{} does not contain key_frame_0.6.txt".format(scene_id))
-                with open(kf_path, 'r') as f:
-                    kf_ids = f.readlines()
-                kf_ids = [int(item.strip()) for item in kf_ids]
-           
-            self.valid_ids[scene_id] = valid_id
+                self.valid_ids[scene_id] = valid_id
 
-            scene_kfs = []
-            if len(kf_ids) < 10:
-                continue
+                scene_kfs = []
+                if len(kf_ids) < 10:
+                    continue
+                
+                for i, kf_id in enumerate(kf_ids):
+                    kf_rgb_path = os.path.join(
+                        scene_dir, 'color/{}.jpg'.format(kf_id))
+                    if not os.path.exists(kf_rgb_path):
+                        continue
+                    prompt_path = kf_rgb_path.replace(
+                        'color', 'prompt').replace('jpg', 'txt')
+                    if os.path.exists(prompt_path):
+                        scene_kfs.append(kf_rgb_path)       
+                        self.prompt_paths.append(prompt_path)
+                        if mode=='train' or i==0 or (config['data_load_mode']=='fix_frame' and i%config['num_views']==0):
+                            self.data_list.append((scene_id, kf_rgb_path))
+
+                self.scene_kfs[scene_id] = scene_kfs
             
-            for i, kf_id in enumerate(kf_ids):
-                kf_rgb_path = os.path.join(
-                    scene_dir, 'color/{}.jpg'.format(kf_id))
-                if not os.path.exists(kf_rgb_path):
-                    continue
-                prompt_path = kf_rgb_path.replace(
-                    'color', 'prompt').replace('jpg', 'txt')
-                if os.path.exists(prompt_path):
-                    scene_kfs.append(kf_rgb_path)       
-                    self.prompt_paths.append(prompt_path)
-                    if mode=='train' or i==0 or (config['data_load_mode']=='fix_frame' and i%config['num_views']==0):
-                        self.data_list.append((scene_id, kf_rgb_path))
-
-            self.scene_kfs[scene_id] = scene_kfs
-        
         # number of views
         self.num_views = config['num_views']
         self.resolution = (config['resolution_w'], config['resolution_h'])

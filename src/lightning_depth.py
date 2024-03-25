@@ -9,6 +9,7 @@ from einops import rearrange
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from .models.depth.MVDepthModel import MultiViewBaseModel
 import cv2
+import matplotlib.pyplot as plt 
 
 
 class DepthGenerator(pl.LightningModule):

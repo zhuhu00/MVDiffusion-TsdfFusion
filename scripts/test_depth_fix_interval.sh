@@ -18,4 +18,4 @@ CUDA_VISIBLE_DEVICES='0' python -u ./test.py configs/depth_generation_fix_interv
     --gpus=${n_gpus_per_node} --num_nodes=${n_nodes} --accelerator="cuda" --strategy="ddp" \
     --batch_size=${batch_size} --num_workers=${torch_num_workers} \
     --mode test \
-    --ckpt_path weights/depth_gen_new.pth
+    --ckpt_path /root/data/pre-trained-models/mvdiffusion/depth_gen.ckpt

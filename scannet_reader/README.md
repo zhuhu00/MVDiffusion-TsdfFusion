@@ -1,6 +1,6 @@
 # Data Exporter
 
-Developed and tested with python 2.7.
+Developed and tested with python 3.
 
 Usage:
 ```
