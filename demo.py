@@ -14,6 +14,15 @@ from datetime import datetime
 
 torch.manual_seed(0)
 
+import debugpy
+try:
+    # 5678 is the default attach port in the VS Code debug configurations. Unless a host and port are specified, host defaults to 127.0.0.1
+    debugpy.listen(("localhost", 9501))
+    print("Waiting for debugger attach")
+    debugpy.wait_for_client()
+except Exception as e:
+    pass
+
 def get_K_R(FOV, THETA, PHI, height, width):
     f = 0.5 * width * 1 / np.tan(0.5 * FOV / 180.0 * np.pi)
     cx = (width - 1) / 2.0
@@ -69,19 +78,18 @@ if args.image_path is None:
     config_file = 'configs/pano_generation.yaml'
     config = yaml.load(open(config_file, 'rb'), Loader=yaml.SafeLoader)
     model = PanoGenerator(config)
-    model.load_state_dict(torch.load('../../data/pre-trained-models/mvdiffusion/pano.ckpt', map_location='cpu')[
+    model.load_state_dict(torch.load('/root/data/pre-trained-models/mvdiffusion/pano.ckpt', map_location='cpu')[
             'state_dict'], strict=True)
-    print('load ====pano.ckpt=====')
+    print('load ==No image reference==pano.ckpt=====')
     model=model.cuda()
     img=None
 else:
-
     config_file = 'configs/pano_generation_outpaint.yaml'
     config = yaml.load(open(config_file, 'rb'), Loader=yaml.SafeLoader)
     model = PanoOutpaintGenerator(config)
-    model.load_state_dict(torch.load('../data/pre-trained-models/mvdiffusion/pano_outpaint.ckpt', map_location='cpu')[
+    model.load_state_dict(torch.load('/root/data/pre-trained-models/mvdiffusion/pano_outpaint.ckpt', map_location='cpu')[
             'state_dict'], strict=True)
-    print('load ====pano_outpaint.ckpt=====')
+    print('load ==Image reference==pano_outpaint.ckpt=====')
     model=model.cuda()
 
     img=cv2.imread(args.image_path)
@@ -130,8 +138,9 @@ if args.text_path is not None:
     args.text=prompt[0]
 else:
     prompt=[args.text]*8
-K=torch.tensor(Ks).cuda()[None]
-R=torch.tensor(Rs).cuda()[None]
+
+K = torch.tensor(np.array(Ks)).cuda()[None]
+R = torch.tensor(np.array(Rs)).cuda()[None]
 
 batch= {
         'images': images,
